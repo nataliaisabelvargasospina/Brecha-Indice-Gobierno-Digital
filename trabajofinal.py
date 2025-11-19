@@ -258,8 +258,12 @@ if not df_filtered.empty: # Solo calcula si hay datos después de filtrar
     
     # --- VISUALIZACIÓN DE MÉTRICAS NUMÉRICAS (Promedio IGD, Máximo, Brecha, Conteo) ---
     st.subheader("📊 Resumen del Rendimiento (IGD) y Conteo")
+
+    PUNTAJE_NACIONAL = 74.8
+    PUNTAJE_TERRITORIAL = 57.5
+    BRECHA_TERRITORIAL = PUNTAJE_NACIONAL - PUNTAJE_TERRITORIAL
     # Creamos 4 columnas
-    col_a, col_b, col_c, col_d = st.columns(4) 
+    col_a, col_b, col_c, col_i, col_d = st.columns(5) 
     
     with col_a:
         st.metric(
@@ -272,8 +276,15 @@ if not df_filtered.empty: # Solo calcula si hay datos después de filtrar
     with col_b:
         st.metric(
             label="Máximo Puntaje de Entidad",
-            value=f"{df_filtered['puntaje_entidad'].max().round(2):.2f}"
+            value=f"{df_filtered['puntaje_entidad'].max().round(1):.2f}"
         )
+
+    with col_i:
+        st.metric(
+            "Brecha Territorial (Pts)", 
+            f"{BRECHA_TERRITORIAL:.2f}",
+            delta=f"74.8 (Nac.) vs 57.5 (Terr.)", 
+            delta_color="inverse")
         
     with col_c: 
         st.metric(
@@ -850,17 +861,42 @@ fig_linea.update_layout(
 st.plotly_chart(fig_linea, use_container_width=True)
 st.markdown("---")
 
+# --- Sección de Conclusiones y Propuesta Técnica ---
+
+st.markdown("---") # Línea divisoria
+
+st.header("📌 Conclusión Estratégica")
+
+# El párrafo principal de la conclusión: Tamaño legible (17px) y texto NORMAL (font-weight: normal)
+st.markdown("""
+<div style='font-size: 17px; font-weight: normal; line-height: 1.5;'>
+El análisis exhaustivo del Índice de Gobierno Digital (IGD) concluye que el desafío central de la política pública es la gestión de brechas de rendimiento, cuya magnitud se cuantifica en un Promedio de Brecha Digital de 31.8 puntos, lo que evidencia un alto potencial no aprovechado. El origen de este rezago es estructural y reside en una profunda desigualdad territorial (17.3 puntos): la mayoría de entidades rezagadas son las territoriales, y su bajo desempeño responde a un problema de ejecución, gestión y desigualdad, no a una falta de potencial. Por lo tanto, superar esta brecha exige que el Estado transite de la simple medición a una estrategia focalizada en el fortalecimiento de capacidades locales en los territorios rezagados.
+</div>
+""", unsafe_allow_html=True)
+
+st.markdown("---")
+
+st.header("Propuesta Técnica Final para Reducir la Brecha Digital Institucional")
+
+# Párrafo introductorio de la propuesta con el mismo tamaño y sin negrita
+st.markdown("""
+<div style='font-size: 17px; font-weight: normal;'>
+A partir del análisis del Índice de Gobierno Digital (IGD) y de la caracterización territorial de la brecha digital institucional, se propone una estrategia técnica sintetizada en cuatro líneas de acción prioritarias:
+</div>
+""", unsafe_allow_html=True)
+
+# La lista de acciones: Usamos lista HTML (<ul>) para mantener el formato limpio y usamos
+# la etiqueta <strong> para poner SOLO el título de la acción en NEGRITA.
+st.markdown("""
+<ul style='font-size: 16px; font-weight: normal;'>
+    <li><strong>1. Fortalecimiento Institucional Territorial:</strong> Implementar asistencia técnica focalizada y permanente en departamentos con menor capacidad administrativa.</li>
+    <li><strong>2. Modernización Tecnológica Mínima Obligatoria:</strong> Establecer un estándar nacional de recursos tecnológicos que asegure conectividad, equipos actualizados y herramientas digitales esenciales.</li>
+    <li><strong>3. Desarrollo del Talento Digital Público:</strong> Crear un programa nacional de formación continua para funcionarios, orientado al uso de herramientas digitales y gestión de datos.</li>
+    <li><strong>4. Coordinación Digital Interinstitucional:</strong> Crear nodos regionales que articulen entidades nacionales y territoriales para acompañar la implementación del IGD, estandarizar prácticas y facilitar transferencia tecnológica.</li>
+</ul>
+""", unsafe_allow_html=True)
 
 #python3 -m streamlit run trabajofinal.py
 
 #cd "Trabajo Final"
 #streamlit run trabajofinal.py
-
-# Tabla resumen
-#st.subheader('🏙️ Resumen por ciudad actual')
-#tabla_ciudad = df_filtrado['ciudad_actual_'].value_counts().reset_index()
-#tabla_ciudad.columns = ['Ciudad actual', 'Número de personas']
-#st.dataframe(tabla_ciudad, use_container_width=True)
-
-#st.markdown('---')
-#st.caption('Dashboard de datos personales')
