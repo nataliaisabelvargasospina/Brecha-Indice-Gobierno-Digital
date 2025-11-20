@@ -354,6 +354,34 @@ else:
 
 st.markdown("---")
 
+#grafica 15
+
+st.subheader("1: Evolución del Rendimiento del IGD: Nacional vs. Territorial")
+
+df_tendencia = df_filtered.groupby(['vigencia', 'orden'])['puntaje_entidad'].mean().reset_index(name='Promedio_IGD')
+
+fig_linea = px.line(
+    df_tendencia,
+    x='vigencia',
+    y='Promedio_IGD',
+    color='orden',
+    line_dash='orden',
+    markers=True,
+    title='Evolución del Rendimiento del IGD: Nacional vs. Territorial',
+    labels={'Promedio_IGD': 'Puntaje Promedio IGD', 'vigencia': 'Año de Medición', 'orden': 'Orden de la Entidad'}
+)
+
+fig_linea.update_layout(
+    xaxis_title='Vigencia (Año)',
+    yaxis_title='Puntaje Promedio IGD',
+    yaxis=dict(range=[40, 90]),
+    template="plotly_white",
+    hovermode="x unified"
+)
+
+st.plotly_chart(fig_linea, use_container_width=True)
+st.markdown("---")
+
 #graficas 1 y 2
 st.subheader("Distribución de Puntajes del Índice de Gobierno Digital (IGD)")
 
@@ -364,7 +392,7 @@ col1, col2 = st.columns(2)
 # COLUMNA IZQUIERDA: GRÁFICA 1 (Distribución General)
 # =========================================================
 with col1:
-    st.markdown("##### 1. Distribución del Puntaje Entidad")
+    st.markdown("##### 2. Distribución del Puntaje Entidad")
     sns.set_style("whitegrid")
 
     # CLAVE: Ajustamos el tamaño a (5, 3.5) para que coincida con la Gráfica 2
@@ -394,7 +422,7 @@ with col1:
 # COLUMNA DERECHA: GRÁFICA 2 (Distribución Segmentada por Orden)
 # =========================================================
 with col2:
-    st.markdown("##### 2. Distribución Segmentada por Orden de Entidad")
+    st.markdown("##### 3. Distribución Segmentada por Orden de Entidad")
 
     # Tamaño ligeramente aumentado (5, 3.5)
     fig2, ax2 = plt.subplots(figsize=(5, 3.5))
@@ -452,7 +480,7 @@ col_izq, col_der = st.columns([5.5, 4.5])
 # COLUMNA IZQUIERDA: GRÁFICA 6 (Promedio por Departamento)
 # =========================================================
 with col_izq:
-    st.markdown("##### 3. Promedio del Índice de Gobierno Digital por Departamento")
+    st.markdown("##### 4. Promedio del Índice de Gobierno Digital por Departamento")
 
     # Cálculos de la Gráfica 6 (Se mantienen)
     promedio_territorial = df_filtered[df_filtered['orden'] == 'Territorial']['puntaje_entidad'].mean()
@@ -490,7 +518,7 @@ with col_izq:
 # COLUMNA DERECHA: GRÁFICA 7 (Promedio por Sector)
 # =========================================================
 with col_der:
-    st.markdown("##### 4. Promedio del Índice de Gobierno Digital por Sector")
+    st.markdown("##### 5. Promedio del Índice de Gobierno Digital por Sector")
 
     # Cálculos de la Gráfica 7 (Se mantienen)
     promedio_general = df_filtered['puntaje_entidad'].mean()
@@ -530,7 +558,7 @@ st.markdown("---")
 
 #grafico 8
 
-st.subheader("Gráfica 5: Brecha Digital Individual: Puntaje Entidad vs. Máximo Grupo Par")
+st.subheader("6: Brecha Digital Individual: Puntaje Entidad vs. Máximo Grupo Par")
 
 df_dispersion = df_filtered[['puntaje_entidad', 'máximo_grupo_par', 'orden']].copy()
 
@@ -581,7 +609,7 @@ col_izq, col_der = st.columns([4.5, 5])
 # COLUMNA IZQUIERDA: GRÁFICA 9 (Mapa de Calor por Departamento)
 # =========================================================
 with col_izq:
-    st.markdown("##### 6. Mapa de Calor por Departamento")
+    st.markdown("##### 7. Mapa de Calor por Departamento")
 
     # Cálculos de la Gráfica 9 (Se mantienen)
     df_rendimiento_depto = df_filtered.groupby('departamento').agg(
@@ -620,7 +648,7 @@ with col_izq:
 # COLUMNA DERECHA: GRÁFICA 10 (Mapa de Calor por Sector)
 # =========================================================
 with col_der:
-    st.markdown("##### 7. Mapa de Calor por Sector")
+    st.markdown("##### 8. Mapa de Calor por Sector")
 
     # Cálculos de la Gráfica 10 (Se mantienen)
     df_rendimiento_sector = df_filtered.groupby('sector').agg(
@@ -657,9 +685,100 @@ with col_der:
 
 st.markdown("---")
 
+#GRAFICA 13 Y 14
+
+# Crea dos columnas para colocar las gráficas una al lado de la otra
+col_g13, col_g14 = st.columns(2)
+
+# =========================================================
+# --- GRÁFICA 13: Departamentos Rezagados (Boxplot) ---
+# =========================================================
+with col_g13:
+    st.subheader("9. Variabilidad del Puntaje IGD en los Departamentos más Rezagados")
+
+    # Cálculos
+    departamentos_rezagados = df_filtered.groupby('departamento')['puntaje_entidad'].mean().nsmallest(5).index.tolist()
+    df_rezagados = df_filtered[df_filtered['departamento'].isin(departamentos_rezagados)].copy()
+    orden_rezagados = df_rezagados.groupby('departamento')['puntaje_entidad'].mean().sort_values(ascending=True).index
+
+    # Figura (Tamaño ajustado a la columna)
+    fig13, ax13 = plt.subplots(figsize=(6, 4))
+
+    sns.boxplot(
+        x='puntaje_entidad',
+        y='departamento',
+        data=df_rezagados,
+        order=orden_rezagados,
+        palette='Reds',
+        fliersize=5,
+        ax=ax13
+    )
+
+    ax13.set_title(f'IGD en {len(departamentos_rezagados)} Departamentos más Rezagados',
+                  fontsize=10,
+                  fontweight='bold')
+    ax13.set_xlabel('Puntaje Entidad (0-100)', fontsize=8)
+    ax13.set_ylabel('Departamento', fontsize=8)
+    ax13.tick_params(axis='x', labelsize=7)
+    ax13.tick_params(axis='y', labelsize=7)
+    ax13.set_xlim(0, 100)
+
+    # *** SOLUCIÓN: Añadir tight_layout para ajuste y estabilidad ***
+    plt.tight_layout()
+    st.pyplot(fig13)
+    plt.close(fig13)
+
+
+# =========================================================
+# --- GRÁFICA 14: Sectores Rezagados (Boxplot) ---
+# =========================================================
+with col_g14:
+    st.subheader("10. Variabilidad del Puntaje IGD en los Sectores más Rezagados")
+
+    # Cálculos
+    sectores_rezagados = df_filtered.groupby('sector')['puntaje_entidad'].mean().nsmallest(5).index.tolist()
+    
+    # Lógica para forzar el salto de línea en etiquetas largas
+    def format_sector_label(label):
+        if len(label) > 25:
+            return label.replace(' y de ', ' y de\n', 1).replace(', la ', ',\nla ', 1).replace(' la ', '\nla ', 1)
+        return label
+    
+    df_rezagados_sector = df_filtered[df_filtered['sector'].isin(sectores_rezagados)].copy()
+    df_rezagados_sector['sector_short'] = df_rezagados_sector['sector'].apply(format_sector_label)
+    orden_rezagados_sector = df_rezagados_sector.groupby('sector_short')['puntaje_entidad'].mean().sort_values(ascending=True).index
+
+    # *** AJUSTE CLAVE: FIGSIZE A (7, 4) PARA HACERLO MÁS ANCHO Y AMPLIO ***
+    fig14, ax14 = plt.subplots(figsize=(7, 4)) 
+
+    sns.boxplot(
+        x='puntaje_entidad',
+        y='sector_short', 
+        data=df_rezagados_sector,
+        order=orden_rezagados_sector,
+        palette='Purples',
+        fliersize=5,
+        ax=ax14
+    )
+
+    # AJUSTES DE TEXTO PEQUEÑO
+    ax14.set_title(f'IGD en {len(sectores_rezagados)} Sectores más Rezagados',
+                  fontsize=8, 
+                  fontweight='bold')
+    ax14.set_xlabel('Puntaje Entidad (0-100)', fontsize=6) 
+    ax14.set_ylabel('Sector', fontsize=6) 
+    ax14.tick_params(axis='x', labelsize=6) 
+    # *** LABELS DE LOS SECTORES A 6 PARA MÁS ESPACIO ***
+    ax14.tick_params(axis='y', labelsize=6) 
+    ax14.set_xlim(0, 100)
+
+    plt.tight_layout()
+    st.pyplot(fig14)
+    plt.close(fig14)
+
 #grafico 11
 
-st.subheader("Gráfica 8: Distribución de Instituciones por Departamento")
+st.subheader("11. Distribución de Instituciones por Departamento")
 
 # *** YA NO USAMOS st.columns para que ocupe más ancho. ***
 # col_g11_small, col_g11_spacer = st.columns([1.0, 1.0]) 
@@ -694,7 +813,7 @@ st.markdown("---")
 
 #grafico 12
 
-st.subheader("Gráfica 9: Distribución de Naturaleza Jurídica por Departamento")
+st.subheader("12. Distribución de Naturaleza Jurídica por Departamento")
 
 # *** YA NO USAMOS st.columns PARA LA G12. Que ocupe el ancho disponible. ***
 # col_g12_small, col_g12_spacer = st.columns([1.0, 1.0]) 
@@ -742,126 +861,7 @@ plt.close(fig12)
 
 st.markdown("---")
 
-#GRAFICA 13 Y 14
-
-# Crea dos columnas para colocar las gráficas una al lado de la otra
-col_g13, col_g14 = st.columns(2)
-
-# =========================================================
-# --- GRÁFICA 13: Departamentos Rezagados (Boxplot) ---
-# =========================================================
-with col_g13:
-    st.subheader("Gráfica 10: Variabilidad del Puntaje IGD en los Departamentos más Rezagados")
-
-    # Cálculos
-    departamentos_rezagados = df_filtered.groupby('departamento')['puntaje_entidad'].mean().nsmallest(5).index.tolist()
-    df_rezagados = df_filtered[df_filtered['departamento'].isin(departamentos_rezagados)].copy()
-    orden_rezagados = df_rezagados.groupby('departamento')['puntaje_entidad'].mean().sort_values(ascending=True).index
-
-    # Figura (Tamaño ajustado a la columna)
-    fig13, ax13 = plt.subplots(figsize=(6, 4))
-
-    sns.boxplot(
-        x='puntaje_entidad',
-        y='departamento',
-        data=df_rezagados,
-        order=orden_rezagados,
-        palette='Reds',
-        fliersize=5,
-        ax=ax13
-    )
-
-    ax13.set_title(f'IGD en {len(departamentos_rezagados)} Departamentos más Rezagados',
-                  fontsize=10,
-                  fontweight='bold')
-    ax13.set_xlabel('Puntaje Entidad (0-100)', fontsize=8)
-    ax13.set_ylabel('Departamento', fontsize=8)
-    ax13.tick_params(axis='x', labelsize=7)
-    ax13.tick_params(axis='y', labelsize=7)
-    ax13.set_xlim(0, 100)
-
-    # *** SOLUCIÓN: Añadir tight_layout para ajuste y estabilidad ***
-    plt.tight_layout()
-    st.pyplot(fig13)
-    plt.close(fig13)
-
-
-# =========================================================
-# --- GRÁFICA 14: Sectores Rezagados (Boxplot) ---
-# =========================================================
-with col_g14:
-    st.subheader("Gráfica 11: Variabilidad del Puntaje IGD en los Sectores más Rezagados")
-
-    # Cálculos
-    sectores_rezagados = df_filtered.groupby('sector')['puntaje_entidad'].mean().nsmallest(5).index.tolist()
-    
-    # Lógica para forzar el salto de línea en etiquetas largas
-    def format_sector_label(label):
-        if len(label) > 25:
-            return label.replace(' y de ', ' y de\n', 1).replace(', la ', ',\nla ', 1).replace(' la ', '\nla ', 1)
-        return label
-    
-    df_rezagados_sector = df_filtered[df_filtered['sector'].isin(sectores_rezagados)].copy()
-    df_rezagados_sector['sector_short'] = df_rezagados_sector['sector'].apply(format_sector_label)
-    orden_rezagados_sector = df_rezagados_sector.groupby('sector_short')['puntaje_entidad'].mean().sort_values(ascending=True).index
-
-    # *** AJUSTE CLAVE: FIGSIZE A (7, 4) PARA HACERLO MÁS ANCHO Y AMPLIO ***
-    fig14, ax14 = plt.subplots(figsize=(7, 4)) 
-
-    sns.boxplot(
-        x='puntaje_entidad',
-        y='sector_short', 
-        data=df_rezagados_sector,
-        order=orden_rezagados_sector,
-        palette='Purples',
-        fliersize=5,
-        ax=ax14
-    )
-
-    # AJUSTES DE TEXTO PEQUEÑO
-    ax14.set_title(f'IGD en {len(sectores_rezagados)} Sectores más Rezagados',
-                  fontsize=8, 
-                  fontweight='bold')
-    ax14.set_xlabel('Puntaje Entidad (0-100)', fontsize=6) 
-    ax14.set_ylabel('Sector', fontsize=6) 
-    ax14.tick_params(axis='x', labelsize=6) 
-    # *** LABELS DE LOS SECTORES A 6 PARA MÁS ESPACIO ***
-    ax14.tick_params(axis='y', labelsize=6) 
-    ax14.set_xlim(0, 100)
-
-    plt.tight_layout()
-    st.pyplot(fig14)
-    plt.close(fig14)
-
-#grafica 15
-
-st.subheader("Gráfica 12: Evolución del Rendimiento del IGD: Nacional vs. Territorial")
-
-df_tendencia = df_filtered.groupby(['vigencia', 'orden'])['puntaje_entidad'].mean().reset_index(name='Promedio_IGD')
-
-fig_linea = px.line(
-    df_tendencia,
-    x='vigencia',
-    y='Promedio_IGD',
-    color='orden',
-    line_dash='orden',
-    markers=True,
-    title='Evolución del Rendimiento del IGD: Nacional vs. Territorial',
-    labels={'Promedio_IGD': 'Puntaje Promedio IGD', 'vigencia': 'Año de Medición', 'orden': 'Orden de la Entidad'}
-)
-
-fig_linea.update_layout(
-    xaxis_title='Vigencia (Año)',
-    yaxis_title='Puntaje Promedio IGD',
-    yaxis=dict(range=[40, 90]),
-    template="plotly_white",
-    hovermode="x unified"
-)
-
-st.plotly_chart(fig_linea, use_container_width=True)
-st.markdown("---")
-
-# --- Sección de Conclusiones y Propuesta Técnica ---
+# Conclusiones y Propuesta Técnica ---
 
 st.markdown("---") # Línea divisoria
 
